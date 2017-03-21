@@ -1,24 +1,12 @@
 'use strict';
 
-var inherits = require('inherits');
-import { assign, map } from 'lodash';
-var Formatter = require('../../formatter');
+import Formatter from '../../formatter';
 
-function Firebird_Formatter(client) {
-  Formatter.call(this, client);
-}
-inherits(Firebird_Formatter, Formatter);
-
-assign(Firebird_Formatter.prototype, {
-
-  alias: function alias(first, second) {
-    return first + ' ' + second;
-  },
-
-  parameter: function parameter(value, notSetValue) {
+export default class Firebird_Formatter extends Formatter {
+  alias(first, second) {
+    return first + ' as ' + second;
+  }
+  parameter(value, notSetValue) {
     return Formatter.prototype.parameter.call(this, value, notSetValue);
   }
-
-});
-
-module.exports = Firebird_Formatter;
+}

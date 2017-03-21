@@ -3,11 +3,11 @@
 // -------
 'use strict';
 
-var inherits = require('inherits');
-var ColumnCompiler = require('../../../schema/columncompiler');
-var helpers = require('../../../helpers');
+import inherits from 'inherits';
+import ColumnCompiler from'../../../schema/columncompiler';
+import * as helpers from '../../../helpers';
 
-import { assign, map } from 'lodash';
+import { assign } from 'lodash';
 
 function ColumnCompiler_Firebird() {
   ColumnCompiler.apply(this, arguments);
@@ -26,12 +26,13 @@ assign(ColumnCompiler_Firebird.prototype, {
 
   bigint: 'bigint',
 
-  double: function double(precision, scale) {
-    if (!precision) return 'double';
+  double(precision, scale) {
+    if (!precision)
+      return 'double';
     return 'double(' + this._num(precision, 8) + ', ' + this._num(scale, 2) + ')';
   },
 
-  integer: function integer(length) {
+  integer(length) {
     length = length ? '(' + this._num(length, 11) + ')' : '';
     return 'int' + length;
   },
@@ -40,12 +41,12 @@ assign(ColumnCompiler_Firebird.prototype, {
 
   smallint: 'smallint',
 
-  tinyint: function tinyint(length) {
+  tinyint(length) {
     length = length ? '(' + this._num(length, 1) + ')' : '';
     return 'tinyint' + length;
   },
 
-  text: function text(column) {
+  text(column) {
     switch (column) {
       case 'medium':
       case 'mediumtext':
@@ -58,15 +59,15 @@ assign(ColumnCompiler_Firebird.prototype, {
     }
   },
 
-  mediumtext: function mediumtext() {
+  mediumtext() {
     return this.text('medium');
   },
 
-  longtext: function longtext() {
+  longtext() {
     return this.text('long');
   },
 
-  enu: function enu(allowed) {
+  enu(allowed) {
     return "enum('" + allowed.join("', '") + "')";
   },
 
@@ -74,49 +75,48 @@ assign(ColumnCompiler_Firebird.prototype, {
 
   timestamp: 'timestamp',
 
-  bit: function bit(length) {
+  bit(length) {
     return length ? 'bit(' + this._num(length) + ')' : 'bit';
   },
 
-  binary: function binary(length) {
+  binary(length) {
     return length ? 'varbinary(' + this._num(length) + ')' : 'blob';
   },
 
   // Modifiers
   // ------
 
-  defaultTo: function defaultTo(value) {
+  defaultTo(value) {
     /*jshint unused: false*/
-    var defaultVal = ColumnCompiler_Firebird.super_.prototype.defaultTo.apply(this, arguments);
+    const defaultVal = ColumnCompiler_Firebird.super_.prototype.defaultTo.apply(this, arguments);
     if (this.type !== 'blob' && this.type.indexOf('text') === -1) {
       return defaultVal;
     }
     return '';
   },
 
-  unsigned: function unsigned() {
+  unsigned() {
     return '';
   },
 
-  first: function first() {
+  first() {
     return 'first';
   },
 
-  after: function after(column) {
+  after(column) {
     return 'after ' + this.formatter.wrap(column);
   },
 
-  comment: function comment(_comment) {
+  comment(_comment) {
     if (_comment && _comment.length > 255) {
       helpers.warn('Your comment is longer than the max comment length for Firebird');
     }
     return _comment && "comment '" + _comment + "'";
   },
 
-  varchar: function varchar(length) {
+  varchar(length) {
     return 'varchar(' + this._num(length, 255) + ')  CHARACTER SET UTF8';
   }
 
 });
-
-module.exports = ColumnCompiler_Firebird;
+export default ColumnCompiler_Firebird
