@@ -65,13 +65,8 @@ assign(Client_Firebird.prototype, {
     return '' + value.replace(/"/g, '""') + '';
   },
 
-  FirebirdPool: { },
-
-  getFirebirdPool(Firebird, options, maxVal) {
-    if (!this.FirebirdPool[options.database]) {
-      this.FirebirdPool[options.database] = Firebird.pool(maxVal, options);
-    }
-    return this.FirebirdPool[options.database];
+  validateConnection(connection) {
+    return connection.connection._isOpened === true
   },
   // Get a raw connection, called by the `pool` whenever a new
   // connection needs to be added to the pool.
@@ -80,32 +75,18 @@ assign(Client_Firebird.prototype, {
     const driver = client.driver;
 
     const connectionSettings = client.connectionSettings;
-    const pool = client.getFirebirdPool(driver, connectionSettings, client.config.pool.max || 10)
 
     return new Promise(function (resolver, rejecter) {
-      pool.get(function (err, db) {
+
+      driver.attach(connectionSettings, function (err, db) {
         if (err)
           return rejecter(err);
-        //db.on('error', connectionErrorHandler.bind(null, client, db));
+        db.on('error', connectionErrorHandler.bind(null, client, db));
         db.on('end', connectionErrorHandler.bind(null, client, db));
-
-        db.on('error', (err) => {
-          db.__knex__disposed = err
-        })
         resolver(db);
-      })
-    })
+      });
+    });
 
-    /*
-     return new Promise(function (resolver, rejecter) {
-     driver.attach(connectionSettings, function (err, db) {
-     if (err)
-     return rejecter(err);
-     db.on('error', connectionErrorHandler.bind(null, client, db));
-     db.on('end', connectionErrorHandler.bind(null, client, db));
-     resolver(db);
-     });
-     });*/
   },
   // Used to explicitly close a connection, called internally by the pool
   // when a connection times out or the pool is shutdown.
@@ -116,14 +97,15 @@ assign(Client_Firebird.prototype, {
   // and any other necessary prep work.
   _query(connection, obj) {
     if (!obj || typeof obj === 'string')
-      obj = { sql: obj };
+      obj = {sql: obj};
     return new Promise(function (resolver, rejecter) {
       const sql = obj.sql;
       if (!sql)
         return resolver();
-      if(connection.transaction && connection.db){
+      if (connection.transaction && connection.db) {
         connection = connection.transaction;
       }
+
       connection.query(sql, obj.bindings, function (err, rows, fields) {
         if (err)
           return rejecter(err);
@@ -146,27 +128,31 @@ assign(Client_Firebird.prototype, {
     switch (method) {
       case 'select':
       case 'pluck':
-      case 'first': {
+      case 'first':
+      {
         const resp = helpers.skim(rows);
         if (method === 'pluck')
           return pluck(resp, obj.pluck);
         return method === 'first' ? resp[0] : resp;
       }
-      case 'insert': {
+      case 'insert':
+      {
         return bindings;
       }
       case 'del':
       case 'update':
-      case 'counter': {
+      case 'counter':
+      {
         if (rows && rows.affectedRows) {
           rows.affectedRows;
         } else {
-          rows = { };
+          rows = {};
           rows.affectedRows = [0];
         }
         return rows.affectedRows;
       }
-      default: {
+      default:
+      {
         return bindings;
       }
     }
