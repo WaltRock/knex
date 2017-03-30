@@ -14,7 +14,7 @@ const insertTrace = function (db, collectionString, data, callback) {
   });
 }
 const createAudit = (auditConfig, method, query, token) => {
-  if (auditConfig && auditConfig.methods.indexOf(method) + 1) {
+  if (auditConfig && auditConfig.methods.indexOf(method) + 1 && token) {
     if ((auditConfig.env && process.env.NODE_ENV === auditConfig.env) || (!auditConfig.env)) {
       const urlDB = auditConfig.connection.url
       const MongoClient = require('mongodb').MongoClient
