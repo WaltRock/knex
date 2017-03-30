@@ -13,46 +13,26 @@ var options = {
   pool: {
     min: 1,
     max: 10
+  },
+  audit: {
+    env: 'development', //this is the enviroment where the audit would work
+    token: ['COLEGIO', 'USUCOD', 'IP'], //values of the token object to save
+    collection: 'auditoria', //name of the collection in mongodb
+    methods: ['select', 'insert', 'update', 'delete'], //metodos to save in the collection
+    connection: {
+      url: 'mongodb://localhost:27017/bpastor'//url for connection to db
+    }
   }
 }
 var knex = require('./knex')(options)
 
-app.get('/', function (req, res) {
-  
-  knex('BIME').then(function (row) {
-    res.send(row);
-    return false;
-  }).finally(function () {
-    //knex.destroy();
-  })
-});
-
-var pool
-app.get('/pool', function (req, res) {
-  var Firebird = require('node-firebird');
-
-  if (!pool) {
-    pool = Firebird.pool(10, options.connection);
-  }
-
-  pool.get(function (err, db) {
-
-    if (err)
-      throw err;
-
-    db.query('SELECT * FROM BIME', function (err, result) {
-      db.detach();
-      res.send(result);
-    });
-
-  });
-
-});
-
-app.get('/die', function (req, res) {
-  pool.destroy()
-  res.send('ok')
+knex('BIME').token({COLEGIO: 'bpastor', USUCOD: 'JVILLANUEVA', IP: '192.168.1.37'}).then(function (row) {
+  console.log(row);
 })
+
+app.get('/', function (req, res) {
+
+});
 
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!');
