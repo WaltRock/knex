@@ -7,16 +7,17 @@ import FunctionHelper from '../functionhelper';
 import QueryInterface from '../query/methods';
 import * as helpers from '../helpers';
 import { assign } from 'lodash'
-import BatchInsert from './batchInsert';
+        import BatchInsert from './batchInsert';
 
 export default function makeKnex(client) {
 
   // The object we're potentially using to kick off an initial chain.
   function knex(tableName, options) {
     const qb = knex.queryBuilder()
-    if (!tableName) helpers.warn(
-      'calling knex without a tableName is deprecated. Use knex.queryBuilder() instead.'
-    );
+    if (!tableName)
+      helpers.warn(
+              'calling knex without a tableName is deprecated. Use knex.queryBuilder() instead.'
+              );
     return tableName ? qb.table(tableName, options) : qb
   }
 
@@ -63,8 +64,8 @@ export default function makeKnex(client) {
 
   // Allow chaining methods from the root object, before
   // any other information is specified.
-  QueryInterface.forEach(function(method) {
-    knex[method] = function() {
+  QueryInterface.forEach(function (method) {
+    knex[method] = function () {
       const builder = knex.queryBuilder()
       return builder[method].apply(builder, arguments)
     }
@@ -79,9 +80,9 @@ export default function makeKnex(client) {
     __knex__: {
       get() {
         helpers.warn(
-          'knex.__knex__ is deprecated, you can get the module version' +
-          "by running require('knex/package').version"
-        )
+                'knex.__knex__ is deprecated, you can get the module version' +
+                "by running require('knex/package').version"
+                )
         return VERSION
       }
     },
@@ -89,9 +90,9 @@ export default function makeKnex(client) {
     VERSION: {
       get() {
         helpers.warn(
-          'knex.VERSION is deprecated, you can get the module version' +
-          "by running require('knex/package').version"
-        )
+                'knex.VERSION is deprecated, you can get the module version' +
+                "by running require('knex/package').version"
+                )
         return VERSION
       }
     },
@@ -123,16 +124,16 @@ export default function makeKnex(client) {
   })
 
   // Passthrough all "start" and "query" events to the knex object.
-  client.on('start', function(obj) {
+  client.on('start', function (obj) {
     knex.emit('start', obj)
   })
-  client.on('query', function(obj) {
+  client.on('query', function (obj) {
     knex.emit('query', obj)
   })
-  client.on('query-error', function(err, obj) {
+  client.on('query-error', function (err, obj) {
     knex.emit('query-error', err, obj)
   })
-  client.on('query-response', function(response, obj, builder) {
+  client.on('query-response', function (response, obj, builder) {
     knex.emit('query-response', response, obj, builder)
   })
 

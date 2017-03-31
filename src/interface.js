@@ -13,32 +13,37 @@ const insertTrace = function (db, collectionString, data, callback) {
     callback(result);
   });
 }
-const createAudit = (auditConfig, method, query, token) => {
-  if (auditConfig && auditConfig.methods.indexOf(method) + 1 && token) {
-    if ((auditConfig.env && process.env.NODE_ENV === auditConfig.env) || (!auditConfig.env)) {
-      const urlDB = auditConfig.connection.url
-      const MongoClient = require('mongodb').MongoClient
-      MongoClient.connect(urlDB, function (err, db) {
-        assert.equal(null, err);
-        let data = {
-          method: method,
-          query: query,
-          date: new Date()
-        }
-        if (Array.isArray(auditConfig.token)) {
-          auditConfig.token.forEach(function (key) {
-            if (typeof key === 'string') {
-              data[key.toLowerCase()] = token[key];
-            }
-          })
-        }
-        insertTrace(db, auditConfig.collection, data, function () {
-          db.close();
-        });
+const createAudit = (auditConfig, method, query, table, token) => {
+  const urlDB = auditConfig.connection.url;
+  const MongoClient = require('mongodb').MongoClient;
+  method = (method === 'del') ? 'delete' : method;
+  const tablesub = table.toLowerCase();
+  const index = tablesub.indexOf('as ') + 1 || tablesub.length;
+  const table2 = tablesub.substring(0, index).trim();
 
-      });
+  MongoClient.connect(urlDB, function (err, db) {
+    if (err){
+      console.erro(err);
+      return ;
     }
-  }
+    let data = {
+      method: method,
+      query: query,
+      date: new Date(),
+      table: table2
+    }
+    if (Array.isArray(auditConfig.token)) {
+      auditConfig.token.forEach(function (key) {
+        if (typeof key === 'string') {
+          data[key.toLowerCase()] = token[key];
+        }
+      })
+    }
+    insertTrace(db, auditConfig.collection, data, function () {
+      db.close();
+    });
+
+  });
 }
 export default function (Target) {
 
@@ -56,7 +61,12 @@ export default function (Target) {
     const result = this.client.runner(this).run();
     let query = this.toQuery();
     let auditConfig = this.client.config.audit;
-    createAudit(auditConfig, this._method, query, this.__token);
+    if (auditConfig && auditConfig.methods.indexOf(this._method) + 1 && this.__token) {
+      if ((auditConfig.env && process.env.NODE_ENV === auditConfig.env) || !auditConfig.env) {
+        createAudit(auditConfig, this._method, query, this._single.table, this.__token);
+      }
+    }
+
     return result.then.apply(result, arguments);
   };
 

@@ -26,9 +26,18 @@ var options = {
 }
 var knex = require('./knex')(options)
 
-knex('BIME').token({COLEGIO: 'bpastor', USUCOD: 'JVILLANUEVA', IP: '192.168.1.37'}).then(function (row) {
-  console.log(row);
-})
+const getKnex = () => {
+  return knex
+}
+
+var knexX = getKnex()
+knexX('BIME').token({COLEGIO: 'bpastor', USUCOD: 'JVILLANUEVA2', IP: '192.168.1.37'})
+        /*.join('PROFE as p', 'p.PROFCOD', 'u.PROFCOD')
+        .where('u.siscod', '21')
+        .where('usucod', 'MLEON')*/
+        .then(function (row) {
+          console.log(row);
+        })
 
 app.get('/', function (req, res) {
 
