@@ -23,7 +23,7 @@ const createAudit = (auditConfig, method, query, table, token) => {
 
   MongoClient.connect(urlDB, function (err, db) {
     if (err){
-      console.erro(err);
+      console.error(err);
       return ;
     }
     let data = {
