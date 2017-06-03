@@ -31,13 +31,9 @@ const getKnex = () => {
 }
 
 var knexX = getKnex()
-knexX('BIME').token({COLEGIO: 'bpastor', USUCOD: 'JVILLANUEVA2', IP: '192.168.1.37'})
-        /*.join('PROFE as p', 'p.PROFCOD', 'u.PROFCOD')
-        .where('u.siscod', '21')
-        .where('usucod', 'MLEON')*/
-        .then(function (row) {
-          console.log(row);
-        })
+
+var x = knexX('BIME').token({COLEGIO: 'bpastor', USUCOD: 'JVILLANUEVA2', IP: '192.168.1.37'}).insert({bimecod:'gg',bimedes:"xxxd"})
+console.log(x.toString());        
 
 app.get('/', function (req, res) {
 

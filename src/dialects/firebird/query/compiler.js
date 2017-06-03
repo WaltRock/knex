@@ -87,7 +87,7 @@ assign(QueryCompiler_Firebird.prototype, {
               sql += '), (';
             sql += this.formatter.parameterize(insertData.values[i]);
           }
-          sql += ')';
+          sql += ');';
         } else if (insertValues.length === 1 && insertValues[0]) {
           sql += this._emptyInsertValue;
         } else {

@@ -17,14 +17,32 @@ const createAudit = (auditConfig, method, query, table, token) => {
   const urlDB = auditConfig.connection.url;
   const MongoClient = require('mongodb').MongoClient;
   method = (method === 'del') ? 'delete' : method;
-  const tablesub = table.toLowerCase();
+
+  let tablesub;
+  try {
+    tablesub = table.toLowerCase();
+  } catch (e) {
+    if (table.sql) {
+      let inexSql = table.sql.indexOf(' ');
+      if (inexSql!==-1) {
+        tablesub = table.sql.substring(0, inexSql);
+        tablesub = tablesub.toLowerCase();
+      } else {
+        tablesub = table.sql.toLowerCase();
+      }
+    }
+  }
+
+  if (!tablesub) {
+    return false;
+  }
   const index = tablesub.indexOf('as ') + 1 || tablesub.length;
   const table2 = tablesub.substring(0, index).trim();
 
   MongoClient.connect(urlDB, function (err, db) {
-    if (err){
+    if (err) {
       console.error(err);
-      return ;
+      return;
     }
     let data = {
       method: method,
